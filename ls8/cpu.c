@@ -5,6 +5,7 @@
 
 #define DATA_LEN 6
 
+// -------- HELPER FUNCTIONS -------- //
 unsigned char cpu_ram_read(struct cpu *cpu, unsigned char index)
 {
   return cpu->ram[index];
@@ -14,35 +15,18 @@ void cpu_ram_write(struct cpu *cpu, unsigned char index, unsigned char thing_to_
 {
   cpu->ram[index] = thing_to_write;
 }
+// --------------------------------- //
 
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
  */
-void cpu_load(struct cpu *cpu, char *filedir)
+void cpu_load(struct cpu *cpu, char *file)
 {
-  /*
-  char data[DATA_LEN] = {
-      // From print8.ls8
-      0b10000010, // LDI R0,8
-      0b00000000,
-      0b00001000,
-      0b01000111, // PRN R0
-      0b00000000,
-      0b00000001 // HLT
-  };
-
-  int address = 0;
-
-  for (int i = 0; i < DATA_LEN; i++)
-  {
-    cpu->ram[address++] = data[i];
-  }
-  */
 
   // TODO: Replace this with something less hard-coded
-  FILE *file = fopen(filedir, "r");
+  FILE *fp = fopen(file, "r");
 
-  if (file == NULL)
+  if (fp == NULL)
   {
     printf("File not found!\n\n");
     exit(2);
@@ -51,7 +35,7 @@ void cpu_load(struct cpu *cpu, char *filedir)
   char line[1024];
   int address = 0;
 
-  while (fgets(line, 1024, file) != NULL)
+  while (fgets(line, 1024, fp) != NULL)
   {
     char *endpoint;
     unsigned char val = strtoul(line, &endpoint, 2);
@@ -64,7 +48,7 @@ void cpu_load(struct cpu *cpu, char *filedir)
     cpu->ram[address++] = val;
   }
 
-  fclose(file);
+  fclose(fp);
 }
 
 /**
@@ -76,6 +60,8 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
   {
   case ALU_MUL:
     // TODO
+    // Multiply the values in two registers together and store the result in registerA.
+    cpu->registers[regA] = cpu->registers[regA] * cpu->registers[regB];
     break;
 
     // TODO: implement more ALU ops
@@ -93,12 +79,12 @@ void cpu_run(struct cpu *cpu)
 
   while (running)
   {
-    unsigned int num_of_operations;
+    unsigned char num_of_operations;
     // TODO
     // 1. Get the value of the current instruction (in address PC).
     unsigned char ir = cpu_ram_read(cpu, cpu->pc);
     // 2. Figure out how many operands this next instruction requires
-    num_of_operations = ir >> 6; // number of operations are stored in bits #6-7
+    num_of_operations = ((ir >> 6) & 0b11) + 1; // number of operations are stored in bits #6-7
     // 3. Get the appropriate value(s) of the operands following this instruction
     operandA = cpu_ram_read(cpu, cpu->pc + 1);
     operandB = cpu_ram_read(cpu, cpu->pc + 2);
@@ -110,16 +96,20 @@ void cpu_run(struct cpu *cpu)
     case LDI: // 2 operands
       // set the value of a register to an integer
       cpu->registers[operandA] = operandB;
-      cpu->pc += 1 + num_of_operations;
+      cpu->pc += num_of_operations;
       break;
     case PRN: // PRN, 1 operands
       // Print to the console the decimal integer value stored in the given register
-      printf("%d\n", *cpu->registers[operandA]);
-      cpu->pc += 1 + num_of_operations;
+      printf("%d\n", cpu->registers[operandA]);
+      cpu->pc += num_of_operations;
       break;
     case HLT: // HLT, no operands
       running = 0;
-      cpu->pc += 1 + num_of_operations;
+      cpu->pc += num_of_operations;
+      break;
+    case MUL:
+      alu(cpu, ALU_MUL, operandA, operandB);
+      cpu->pc += num_of_operations;
       break;
     default: // instruction not found
       printf("Unknown instruction. PC = %d || IR = %d\n", cpu->pc, ir);
