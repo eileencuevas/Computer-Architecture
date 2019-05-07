@@ -18,8 +18,9 @@ void cpu_ram_write(struct cpu *cpu, unsigned char index, unsigned char thing_to_
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
  */
-void cpu_load(struct cpu *cpu)
+void cpu_load(struct cpu *cpu, char *filedir)
 {
+  /*
   char data[DATA_LEN] = {
       // From print8.ls8
       0b10000010, // LDI R0,8
@@ -36,8 +37,34 @@ void cpu_load(struct cpu *cpu)
   {
     cpu->ram[address++] = data[i];
   }
+  */
 
   // TODO: Replace this with something less hard-coded
+  FILE *file = fopen(filedir, "r");
+
+  if (file == NULL)
+  {
+    printf("File not found!\n\n");
+    exit(2);
+  }
+
+  char line[1024];
+  int address = 0;
+
+  while (fgets(line, 1024, file) != NULL)
+  {
+    char *endpoint;
+    unsigned char val = strtoul(line, &endpoint, 2);
+
+    if (endpoint == line)
+    {
+      continue;
+    }
+
+    cpu->ram[address++] = val;
+  }
+
+  fclose(file);
 }
 
 /**
