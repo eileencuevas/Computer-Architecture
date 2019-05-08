@@ -96,25 +96,36 @@ void cpu_run(struct cpu *cpu)
     case LDI: // 2 operands
       // set the value of a register to an integer
       cpu->registers[operandA] = operandB;
-      cpu->pc += num_of_operations;
       break;
+    case POP:
+      // Copy the value from the address pointed to by SP to the given register
+      cpu->registers[operandA] = cpu_ram_read(cpu, cpu->registers[7]);
+      // Increment SP
+      cpu->registers[7]++;
+      break;
+      //TODO: implement something for potential stack underflow
     case PRN: // PRN, 1 operands
       // Print to the console the decimal integer value stored in the given register
       printf("%d\n", cpu->registers[operandA]);
-      cpu->pc += num_of_operations;
+      break;
+    case PUSH: //PUSH, 1 operand
+      // Decrement the SP
+      cpu->registers[7]--;
+      // Copy the value in the given register to the address pointed to by SP
+      cpu_ram_write(cpu, cpu->registers[7], cpu->registers[operandA]);
+      // TODO: implement something for potential stack overflow
       break;
     case HLT: // HLT, no operands
       running = 0;
-      cpu->pc += num_of_operations;
       break;
     case MUL:
       alu(cpu, ALU_MUL, operandA, operandB);
-      cpu->pc += num_of_operations;
       break;
     default: // instruction not found
       printf("Unknown instruction. PC = %d || IR = %d\n", cpu->pc, ir);
       exit(1);
     }
+    cpu->pc += num_of_operations;
   }
 }
 
