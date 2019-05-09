@@ -17,8 +17,21 @@ struct cpu
 // ALU operations
 enum alu_op
 {
-  ALU_MUL
+  ALU_MUL,
   // Add more here
+  ALU_ADD,
+  ALU_AND,
+  ALU_CMP,
+  ALU_DEC,
+  ALU_DIV,
+  ALU_INC,
+  ALU_MOD,
+  ALU_NOT,
+  ALU_OR,
+  ALU_SHL,
+  ALU_SHR,
+  ALU_SUB,
+  ALU_XOR
 };
 
 // Instructions
@@ -33,6 +46,20 @@ enum alu_op
 #define MUL 0b10100010
 #define PUSH 0b01000101
 #define POP 0b01000110
+
+#define ADD 0b10100000
+#define AND 0b10101000
+#define CMP 0b10100111
+#define DEC 0b01100110
+#define INC 0B01100101
+#define DIV 0b10100011
+#define MOD 0b10100100
+#define NOT 0b01101001
+#define OR 0b10101010
+#define SHL 0b10101100
+#define SHR 0b10101101
+#define SUB 0b10100001
+#define XOR 0b10101011
 
 // Function declarations
 

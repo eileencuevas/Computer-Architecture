@@ -64,7 +64,96 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     cpu->registers[regA] = cpu->registers[regA] * cpu->registers[regB];
     break;
 
-    // TODO: implement more ALU ops
+  // TODO: implement more ALU ops
+  case ALU_ADD:
+    // Add the value in two registers and store the result in registerA
+    cpu->registers[regA] = cpu->registers[regA] + cpu->registers[regB];
+    break;
+  case ALU_AND:
+    cpu->registers[regA] = cpu->registers[regA] & cpu->registers[regB];
+    break;
+  case ALU_CMP:
+    // fl bits: 00000LGE
+    // Compare the values in two registers.
+    // If they are equal, set the Equal E flag to 1, otherwise set it to 0.
+    if (cpu->registers[regA] == cpu->registers[regB])
+    {
+      cpu->fl = 0b00000001;
+    }
+    // If registerA is less than registerB, set the Less-than L flag to 1,
+    //  otherwise set it to 0.
+    else if (cpu->registers[regA] < cpu->registers[regB])
+    {
+      cpu->fl = 0b00000100;
+    }
+    // If registerA is greater than registerB, set the Greater-than G flag to 1,
+    // otherwise set it to 0.
+    else
+    {
+      cpu->fl = 0b00000010;
+    }
+    break;
+  case ALU_DEC:
+    // Decrement (subtract 1 from) the value in the given register.
+    cpu->registers[regA]--;
+    break;
+  case ALU_DIV:
+    // If the value in the second register is 0, the system should
+    // print an error message and halt
+    if (cpu->registers[regB] == 0)
+    {
+      printf("Error: Cannot divide by zero");
+      exit(2);
+    }
+    // Divide the value in the first register by the value in the second,
+    // storing the result in registerA
+    cpu->registers[regA] = cpu->registers[regA] / cpu->registers[regB];
+    break;
+  case ALU_INC:
+    // Increment (add 1 to) the value in the given register.
+    cpu->registers[regA]++;
+    break;
+  case ALU_MOD:
+    // If the value in the second register is 0, the system should
+    // print an error message and halt
+    if (cpu->registers[regB] == 0)
+    {
+      printf("Error: Cannot divide by zero");
+      exit(2);
+    }
+    // Divide the value in the first register by the value in the second,
+    // storing the remainder of the result in registerA
+    cpu->registers[regA] = cpu->registers[regA] % cpu->registers[regB];
+    break;
+  case ALU_NOT:
+    // Perform a bitwise-NOT on the value in a register.
+    cpu->registers[regA] = ~cpu->registers[regA];
+    break;
+  case ALU_OR:
+    // Perform a bitwise-OR between the values in registerA and registerB,
+    // storing the result in registerA.
+    cpu->registers[regA] = cpu->registers[regA] | cpu->registers[regB];
+    break;
+  case ALU_SHL:
+    // Shift the value in registerA left by the number of bits specified in registerB,
+    // filling the low bits with 0.
+    cpu->registers[regA] = cpu->registers[regA] << cpu->registers[regB];
+    break;
+  case ALU_SHR:
+    // Shift the value in registerA right by the number of bits specified in registerB,
+    // filling the high bits with 0.
+    cpu->registers[regA] = cpu->registers[regA] >> cpu->registers[regB];
+    break;
+  case ALU_SUB:
+    // Subtract the value in the second register from the first,
+    // storing the result in registerA.
+    cpu->registers[regA] = cpu->registers[regA] - cpu->registers[regB];
+    break;
+  case ALU_XOR:
+    // Perform a bitwise-XOR between the values in registerA and registerB,
+    // storing the result in registerA.
+    cpu->registers[regA] = cpu->registers[regA] ^ cpu->registers[regB];
+    break;
   }
 }
 
@@ -92,10 +181,36 @@ void cpu_run(struct cpu *cpu)
     switch (ir)
     {
     // 5. Do whatever the instruction should do according to the spec.
-    // 6. Move the PC to the next instruction.
+    case ADD:
+      alu(cpu, ALU_ADD, operandA, operandB);
+      break;
+    case AND:
+      alu(cpu, ALU_AND, operandA, operandB);
+      break;
+    case CMP:
+      alu(cpu, ALU_CMP, operandA, operandB);
+      break;
+    case DEC:
+      alu(cpu, ALU_DEC, operandA, operandB);
+      break;
+    case DIV:
+      alu(cpu, ALU_DIV, operandA, operandB);
+      break;
+    case INC:
+      alu(cpu, ALU_INC, operandA, operandB);
+      break;
     case LDI: // 2 operands
       // set the value of a register to an integer
       cpu->registers[operandA] = operandB;
+      break;
+    case MOD:
+      alu(cpu, ALU_MOD, operandA, operandB);
+      break;
+    case NOT:
+      alu(cpu, ALU_NOT, operandA, operandB);
+      break;
+    case OR:
+      alu(cpu, ALU_OR, operandA, operandB);
       break;
     case POP:
       // Copy the value from the address pointed to by SP to the given register
@@ -121,10 +236,23 @@ void cpu_run(struct cpu *cpu)
     case MUL:
       alu(cpu, ALU_MUL, operandA, operandB);
       break;
+    case SHL:
+      alu(cpu, ALU_SHL, operandA, operandB);
+      break;
+    case SHR:
+      alu(cpu, ALU_SHR, operandA, operandB);
+      break;
+    case SUB:
+      alu(cpu, ALU_SUB, operandA, operandB);
+      break;
+    case XOR:
+      alu(cpu, ALU_XOR, operandA, operandB);
+      break;
     default: // instruction not found
       printf("Unknown instruction. PC = %d || IR = %d\n", cpu->pc, ir);
       exit(1);
     }
+    // 6. Move the PC to the next instruction.
     cpu->pc += num_of_operations;
   }
 }
