@@ -190,6 +190,16 @@ void cpu_run(struct cpu *cpu)
     case CMP:
       alu(cpu, ALU_CMP, operandA, operandB);
       break;
+    case CALL:
+      // The address of the instruction directly after CALL is pushed onto the stack
+      cpu->registers[7]--;
+      cpu_ram_write(cpu, cpu->registers[7], cpu->pc + num_of_operations);
+      // The PC is set to the address stored in the given register
+      // Also, decrement amount set to PC by num_of_operations as it'll be increased
+      // after exiting case
+      cpu->pc = cpu->registers[operandA] - num_of_operations;
+      // We jump to that location in RAM and execute the first instruction in the subroutine
+      break;
     case DEC:
       alu(cpu, ALU_DEC, operandA, operandB);
       break;
@@ -236,6 +246,13 @@ void cpu_run(struct cpu *cpu)
     case MUL:
       alu(cpu, ALU_MUL, operandA, operandB);
       break;
+    case RET:
+      // Pop the value from the top of the stack and store it in the PC
+      // Also, decrement amount returned by num_of_operations as it'll be increased
+      // after exiting case
+      cpu->pc = cpu_ram_read(cpu, cpu->registers[7]) - num_of_operations;
+      cpu->registers[7]++;
+      break;
     case SHL:
       alu(cpu, ALU_SHL, operandA, operandB);
       break;
@@ -253,6 +270,7 @@ void cpu_run(struct cpu *cpu)
       exit(1);
     }
     // 6. Move the PC to the next instruction.
+    // printf("PC: %d\n", cpu->pc);
     cpu->pc += num_of_operations;
   }
 }

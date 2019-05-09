@@ -50,12 +50,14 @@ enum alu_op
 #define ADD 0b10100000
 #define AND 0b10101000
 #define CMP 0b10100111
+#define CALL 0b01010000
 #define DEC 0b01100110
 #define INC 0B01100101
 #define DIV 0b10100011
 #define MOD 0b10100100
 #define NOT 0b01101001
 #define OR 0b10101010
+#define RET 0b00010001
 #define SHL 0b10101100
 #define SHR 0b10101101
 #define SUB 0b10100001
