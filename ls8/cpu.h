@@ -49,7 +49,6 @@ enum alu_op
 
 #define ADD 0b10100000
 #define AND 0b10101000
-#define CMP 0b10100111
 #define CALL 0b01010000
 #define DEC 0b01100110
 #define INC 0B01100101
@@ -62,6 +61,13 @@ enum alu_op
 #define SHR 0b10101101
 #define SUB 0b10100001
 #define XOR 0b10101011
+
+// Sprint
+
+#define CMP 0b10100111
+#define JMP 0b01010100
+#define JEQ 0b01010101
+#define JNE 0b01010110
 
 // Function declarations
 
