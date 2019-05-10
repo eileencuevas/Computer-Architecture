@@ -5,6 +5,11 @@
 
 #define DATA_LEN 6
 
+// Flags
+#define GREATER 0b00000010
+#define LESS 0b00000100
+#define EQUAL 0b00000001
+
 // -------- HELPER FUNCTIONS -------- //
 unsigned char cpu_ram_read(struct cpu *cpu, unsigned char index)
 {
@@ -78,19 +83,19 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     // If they are equal, set the Equal E flag to 1, otherwise set it to 0.
     if (cpu->registers[regA] == cpu->registers[regB])
     {
-      cpu->fl = 0b00000001;
+      cpu->fl = EQUAL;
     }
     // If registerA is less than registerB, set the Less-than L flag to 1,
     //  otherwise set it to 0.
     else if (cpu->registers[regA] < cpu->registers[regB])
     {
-      cpu->fl = 0b00000100;
+      cpu->fl = LESS;
     }
     // If registerA is greater than registerB, set the Greater-than G flag to 1,
     // otherwise set it to 0.
     else
     {
-      cpu->fl = 0b00000010;
+      cpu->fl = GREATER;
     }
     break;
   case ALU_DEC:
@@ -208,6 +213,22 @@ void cpu_run(struct cpu *cpu)
       break;
     case INC:
       alu(cpu, ALU_INC, operandA, operandB);
+      break;
+    case JEQ:
+      if (cpu->fl == EQUAL)
+      {
+        cpu->pc = cpu->registers[operandA] - num_of_operations;
+      }
+      break;
+    case JMP:
+      // Set the PC to the address stored in the given register
+      cpu->pc = cpu->registers[operandA] - num_of_operations;
+      break;
+    case JNE:
+      if (cpu->fl != EQUAL)
+      {
+        cpu->pc = cpu->registers[operandA] - num_of_operations;
+      }
       break;
     case LDI: // 2 operands
       // set the value of a register to an integer
